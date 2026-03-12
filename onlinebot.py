@@ -34,7 +34,7 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
 
-    channel = bot.get_channel(1481594709720698962)  # ใส่ ID ช่อง
+    channel = bot.get_channel(1481213640354037772)  # ใส่ ID ช่อง
 
     embed = discord.Embed(
         title="🎉 ยินดีต้อนรับ!",
@@ -54,3 +54,4 @@ async def on_member_join(member):
 # -------- รันบอท --------
 keep_alive()
 bot.run(TOKEN)
+
