@@ -1,4 +1,4 @@
-import discord
+คำสั่งนี้ใช้ได้เฉพาะเจ้าของเซิร์ฟเวอร์เท่านั้น discord
 from discord.ext import commands
 from flask import Flask
 from threading import Thread
@@ -44,7 +44,7 @@ async def on_ready():
 async def setwelcome(ctx):
 
     if ctx.author.id != ctx.guild.owner_id:
-        await ctx.send("❌ คำสั่งนี้ใช้ได้เฉพาะเจ้าของเซิร์ฟเวอร์เท่านั้น")
+        await ctx.send("❌ คำสั่งนี้ใช้ได้แค่เจ้าของเท่านั้น อย่าๆๆๆ")
         return
 
     welcome_channels[ctx.guild.id] = ctx.channel.id
@@ -92,3 +92,4 @@ async def on_member_join(member):
 # -------- RUN --------
 keep_alive()
 bot.run(TOKEN)
+
