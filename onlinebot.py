@@ -27,6 +27,9 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
+# -------- กันส่งซ้ำ --------
+welcomed_users = set()
+
 # -------- BOT READY --------
 @bot.event
 async def on_ready():
@@ -35,6 +38,12 @@ async def on_ready():
 # -------- WELCOME --------
 @bot.event
 async def on_member_join(member):
+
+    # กันส่งซ้ำ
+    if member.id in welcomed_users:
+        return
+
+    welcomed_users.add(member.id)
 
     channel = bot.get_channel(1481213640354037772)
 
@@ -52,7 +61,6 @@ async def on_member_join(member):
 
     embed.set_thumbnail(url=member.display_avatar.url)
 
-    # GIF ฮาๆ
     embed.set_image(
         url="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
     )
