@@ -10,10 +10,11 @@ TOKEN = os.getenv("TOKEN")
 intents = discord.Intents.default()
 intents.members = True
 intents.guilds = True
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -------- WEB SERVER --------
+# -------- WEB SERVER (กันบอทหลับ) --------
 app = Flask(__name__)
 
 @app.route("/")
@@ -27,6 +28,9 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
+# -------- เก็บห้องต้อนรับ --------
+welcome_channels = {}
+
 # -------- กันส่งซ้ำ --------
 welcomed_users = set()
 
@@ -35,17 +39,33 @@ welcomed_users = set()
 async def on_ready():
     print(f"🤖 Bot online: {bot.user}")
 
+# -------- ตั้งค่าห้องต้อนรับ --------
+@bot.command()
+async def setwelcome(ctx):
+
+    if ctx.author.id != ctx.guild.owner_id:
+        await ctx.send("❌ คำสั่งนี้ใช้ได้เฉพาะเจ้าของเซิร์ฟเวอร์เท่านั้น")
+        return
+
+    welcome_channels[ctx.guild.id] = ctx.channel.id
+
+    await ctx.send("✅ ตั้งค่าห้องต้อนรับเรียบร้อยแล้ว")
+
 # -------- WELCOME --------
 @bot.event
 async def on_member_join(member):
 
-    # กันส่งซ้ำ
     if member.id in welcomed_users:
         return
 
     welcomed_users.add(member.id)
 
-    channel = bot.get_channel(1481213640354037772)
+    channel_id = welcome_channels.get(member.guild.id)
+
+    if channel_id is None:
+        return
+
+    channel = bot.get_channel(channel_id)
 
     embed = discord.Embed(
         title="🎉 ยินดีต้อนรับเข้าสู่เซิร์ฟเวอร์!",
