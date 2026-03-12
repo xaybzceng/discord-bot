@@ -4,18 +4,21 @@ from flask import Flask
 from threading import Thread
 import os
 
-# TOKEN จาก Render Environment
 TOKEN = os.getenv("TOKEN")
 
-# ---------- Intent ----------
+# ---------- INTENTS ----------
 intents = discord.Intents.default()
 intents.members = True
 intents.guilds = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(
+    command_prefix="!",
+    intents=intents,
+    member_cache_flags=discord.MemberCacheFlags.all()
+)
 
-# ---------- Flask (กันบอทหลับ) ----------
+# ---------- WEB SERVER (กันบอทหลับ) ----------
 app = Flask(__name__)
 
 @app.route("/")
@@ -29,36 +32,46 @@ def keep_alive():
     server = Thread(target=run)
     server.start()
 
-# ---------- Bot Online ----------
+# ---------- BOT READY ----------
 @bot.event
 async def on_ready():
-    print(f"✅ Bot online: {bot.user}")
+    print(f"🤖 Bot online: {bot.user}")
 
-# ---------- Welcome System ----------
+# ---------- WELCOME SYSTEM ----------
 @bot.event
 async def on_member_join(member):
 
     channel = bot.get_channel(1481213640354037772)
 
-    if channel is None:
-        print("❌ Channel not found")
-        return
-
     embed = discord.Embed(
-        title="🎉 ยินดีต้อนรับ!",
-        description=f"สวัสดี {member.mention} 👋\nยินดีต้อนรับเข้าสู่เซิร์ฟเวอร์!",
-        color=0x00ffcc
+        title="🎉 ยินดีต้อนรับสู่เซิร์ฟเวอร์!",
+        description=f"สวัสดี {member.mention} 👋\n"
+                    f"ยินดีต้อนรับเข้าสู่ **{member.guild.name}**",
+        color=discord.Color.blue()
     )
 
     embed.add_field(
         name="👥 สมาชิกคนที่",
-        value=member.guild.member_count
+        value=f"{member.guild.member_count}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="📜 กฎเซิร์ฟเวอร์",
+        value="กรุณาอ่านกฎก่อนใช้งานนะครับ",
+        inline=False
     )
 
     embed.set_thumbnail(url=member.display_avatar.url)
 
+    embed.set_image(
+        url="https://media.giphy.com/media/OkJat1YNdoD3W/giphy.gif"
+    )
+
+    embed.set_footer(text=f"User ID: {member.id}")
+
     await channel.send(embed=embed)
 
-# ---------- Run ----------
+# ---------- RUN ----------
 keep_alive()
 bot.run(TOKEN)
