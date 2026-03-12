@@ -11,12 +11,9 @@ intents = discord.Intents.default()
 intents.members = True
 intents.guilds = True
 
-bot = commands.Bot(
-    command_prefix="!",
-    intents=intents
-)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -------- WEB SERVER (กันหลับ) --------
+# -------- WEB SERVER --------
 app = Flask(__name__)
 
 @app.route("/")
@@ -27,10 +24,10 @@ def run():
     app.run(host="0.0.0.0", port=10000)
 
 def keep_alive():
-    server = Thread(target=run)
-    server.start()
+    t = Thread(target=run)
+    t.start()
 
-# -------- BOT ONLINE --------
+# -------- BOT READY --------
 @bot.event
 async def on_ready():
     print(f"🤖 Bot online: {bot.user}")
@@ -42,18 +39,23 @@ async def on_member_join(member):
     channel = bot.get_channel(1481213640354037772)
 
     embed = discord.Embed(
-        title="🎉 ยินดีต้อนรับ!",
-        description=f"สวัสดี {member.mention} 👋\nยินดีต้อนรับเข้าสู่ **{member.guild.name}**",
+        title="🎉 ยินดีต้อนรับเข้าสู่เซิร์ฟเวอร์!",
+        description=f"ฮัลโหล {member.mention} 👋\nยินดีต้อนรับเข้าสู่ **{member.guild.name}**",
         color=discord.Color.green()
     )
 
     embed.add_field(
         name="👥 สมาชิกคนที่",
-        value=f"{member.guild.member_count}",
+        value=member.guild.member_count,
         inline=False
     )
 
     embed.set_thumbnail(url=member.display_avatar.url)
+
+    # GIF ฮาๆ
+    embed.set_image(
+        url="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
+    )
 
     embed.set_footer(text=f"User ID: {member.id}")
 
