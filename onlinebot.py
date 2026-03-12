@@ -4,14 +4,15 @@ from flask import Flask
 from threading import Thread
 import os
 
-TOKEN = os.getenv("TOKEN")  # ใส่ TOKEN ใน Render
+TOKEN = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.members = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -------- Flask ทำให้บอทไม่หลับ --------
+# -------- Flask --------
 app = Flask('')
 
 @app.route('/')
@@ -25,20 +26,20 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# -------- บอทออนไลน์ --------
+# -------- Bot Ready --------
 @bot.event
 async def on_ready():
     print(f"Bot online: {bot.user}")
 
-# -------- ระบบต้อนรับ --------
+# -------- Welcome System --------
 @bot.event
 async def on_member_join(member):
 
-    channel = bot.get_channel(1481213640354037772)  # ใส่ ID ช่อง
+    channel = bot.get_channel(1481213640354037772)
 
     embed = discord.Embed(
         title="🎉 ยินดีต้อนรับ!",
-        description=f"สวัสดี {member.mention} 👋\nยินดีต้อนรับสู่เซิร์ฟเวอร์!",
+        description=f"สวัสดี {member.mention} 👋\nยินดีต้อนรับเข้าสู่เซิร์ฟเวอร์",
         color=0x00ffcc
     )
 
@@ -51,7 +52,5 @@ async def on_member_join(member):
 
     await channel.send(embed=embed)
 
-# -------- รันบอท --------
 keep_alive()
 bot.run(TOKEN)
-
