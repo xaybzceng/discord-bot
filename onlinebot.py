@@ -1,20 +1,21 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 from flask import Flask
 from threading import Thread
 import os
 
 TOKEN = os.getenv("TOKEN")
 
-# -------- INTENTS --------
 intents = discord.Intents.default()
 intents.members = True
-intents.guilds = True
 intents.message_content = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# -------- WEB SERVER (กันบอทหลับ) --------
+# ---------------- WEB SERVER ----------------
+
 app = Flask(__name__)
 
 @app.route("/")
@@ -28,67 +29,72 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# -------- เก็บห้องต้อนรับ --------
+# ---------------- DATA ----------------
+
 welcome_channels = {}
 
-# -------- กันส่งซ้ำ --------
-welcomed_users = set()
+gifs = [
+"https://media.giphy.com/media/OkJat1YNdoD3W/giphy.gif",
+"https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+"https://media.giphy.com/media/ASd0Ukj0y3qMM/giphy.gif"
+]
 
-# -------- BOT READY --------
+# ---------------- READY ----------------
+
 @bot.event
 async def on_ready():
-    print(f"🤖 Bot online: {bot.user}")
+    await bot.tree.sync()
+    print(f"🤖 Bot Online : {bot.user}")
 
-# -------- ตั้งค่าห้องต้อนรับ --------
-@bot.command()
-async def setwelcome(ctx):
+# ---------------- SET WELCOME ----------------
 
-    if ctx.author.id != ctx.guild.owner_id:
-        await ctx.send("❌ คำสั่งนี้ใช้ได้เฉพาะเจ้าของเซิร์ฟเวอร์เท่านั้น อย่าๆๆๆๆ")
+@bot.tree.command(name="setwelcome", description="ตั้งค่าห้องต้อนรับ")
+async def setwelcome(interaction: discord.Interaction):
+
+    if interaction.user.id != interaction.guild.owner_id:
+        await interaction.response.send_message(
+            "❌ คำสั่งนี้ใช้ได้เฉพาะเจ้าของเซิร์ฟเวอร์",
+            ephemeral=True
+        )
         return
 
-    welcome_channels[ctx.guild.id] = ctx.channel.id
+    welcome_channels[interaction.guild.id] = interaction.channel.id
 
-    await ctx.send("✅ ตั้งค่าห้องต้อนรับเรียบร้อยแล้ว")
+    await interaction.response.send_message(
+        "✅ ตั้งค่าห้องต้อนรับเรียบร้อยแล้ว"
+    )
 
-# -------- WELCOME --------
+# ---------------- MEMBER JOIN ----------------
+
 @bot.event
 async def on_member_join(member):
 
-    if member.id in welcomed_users:
+    guild_id = member.guild.id
+
+    if guild_id not in welcome_channels:
         return
 
-    welcomed_users.add(member.id)
-
-    channel_id = welcome_channels.get(member.guild.id)
-
-    if channel_id is None:
-        return
-
-    channel = bot.get_channel(channel_id)
+    channel = bot.get_channel(welcome_channels[guild_id])
 
     embed = discord.Embed(
-        title="🎉 ยินดีต้อนรับเข้าสู่เซิร์ฟเวอร์!",
-        description=f"ฮัลโหล {member.mention} 👋\nยินดีต้อนรับเข้าสู่ **{member.guild.name}**",
+        title="🎉 ยินดีต้อนรับ!",
+        description=f"สวัสดี {member.mention} 👋\nยินดีต้อนรับเข้าสู่ **{member.guild.name}**",
         color=discord.Color.green()
     )
 
     embed.add_field(
         name="👥 สมาชิกคนที่",
-        value=member.guild.member_count,
-        inline=False
+        value=member.guild.member_count
     )
 
     embed.set_thumbnail(url=member.display_avatar.url)
 
-    embed.set_image(
-        url="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"
-    )
-
-    embed.set_footer(text=f"User ID: {member.id}")
+    import random
+    embed.set_image(url=random.choice(gifs))
 
     await channel.send(embed=embed)
 
-# -------- RUN --------
+# ---------------- RUN ----------------
+
 keep_alive()
 bot.run(TOKEN)
