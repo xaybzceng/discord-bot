@@ -6,7 +6,7 @@ from threading import Thread
 
 TOKEN = os.getenv("TOKEN")
 
-VOICE_CHANNEL_ID = 123456789012345678  # ใส่ ID ห้องเสียง
+VOICE_CHANNEL_ID = 1481939207478972510  # ใส่ ID ห้องเสียง
 
 app = Flask('')
 
@@ -37,3 +37,4 @@ async def on_ready():
 
 keep_alive()
 bot.run(TOKEN)
+
